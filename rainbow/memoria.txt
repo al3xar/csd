@@ -1,0 +1,23 @@
+
+
+
+Primera prueba
+
+He considerado una contraseña numérica de 4 digitos: 1234
+
+Para generar la tabla, en ancho 10 y en profundo hasta 9999.
+Es decir, he sacado el hash de todas las posibles contraseñas.
+Así me aseguro de que el password está dentro de la tabla.
+Al lanzar el algoritmo y buscar el hash, se encotraba colisión.
+Sin importar el ancho de la tabla, pues la contraseña estaba en la primera fila y no en medio.
+Por lo que podía determinar una anchura de tamaño 2 y se seguia encontrando la contraseña.
+
+
+Esto no ocurría si reducía la profundidad de la tabla,
+pues mi función de reverse nunca podía dar un número de 4 digitos a partir del hash.
+
+Función reverse: hash -> dividir en 4 bits -> convertir esos 4 bits en un numero del 0-9 -> inclurlo en la cadena
+
+Resultado: contraseña 1234 -> hash -> reverse -> 4221314900
+
+La función reverse siempre devolvería un número de 10 digitos. No nos sirve.

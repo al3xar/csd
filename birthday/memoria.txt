@@ -1,0 +1,12 @@
+
+
+
+
+
+
+Si la funcion de resumen es muy pequeña (por ejemplo, 20) y creamos un diccionario del texto blanco con 2^20 hashes.
+Tienes el diccionario completo de todos los posibles hashes del mismo texto semanticamente equivalente.
+Qué significa eso? Que puedes hashear el black_text sin permutarlo y colisionará a la primera con uno de los hashes del diccionario (porque tienes todos los hashes posibles)
+
+Esto lo descubrí por error al utilizar t=N/2 para hashear. Como computancionalmente es assequible generar el diccionario completo de 2^20 y el hash es de 20, tienes todos los hashes, por tanto sacar un balck_text fraudilento tiene complejidad  O(1)
+
