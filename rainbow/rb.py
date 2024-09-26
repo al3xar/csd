@@ -5,7 +5,7 @@ import ast
 def reverse(hash: str) -> str:
     hash_value = ''.join(bin(int(char, 16))[2:].zfill(4) for char in hash)
     first_5_bits = int(hash_value[:15], 2)
-    length = 4 + (first_5_bits % 6)
+    length = 6 + (first_5_bits % 14)
     remaining_bits = int(hash_value, 2)
     password = str(remaining_bits).zfill(10)[:length]
     
@@ -23,11 +23,14 @@ def hash(data:str, num_bits=60):
 
 def gen_table(width: int, deep: int) -> dict:
     table ={}
-    for i in range(deep):
-        passwd = str(random.randrange(9999999))
+    while len(table) < deep:
+        passwd = str(random.randrange(999999999))
         p = passwd
         for j in range(width):
-            p = reverse(hash(p))
+            h = hash(p)
+            if h in table:
+                break
+            p = reverse(h)
         table[hash(p)] = passwd
     print("Table generated", len(table))
     return table
@@ -47,9 +50,10 @@ print(f"Hash of password {h}")
 # print("Reverse of hash:", reverse(hash("123456789012")))
 # print("Reverse of hash:", reverse(hash("1234567890123")))
 
-width= 100
-deep = 100000
+width= 1000
+deep = 10000
 try :
+    raise Exception("Table not found")
     f_table = open('table.txt').read()
     table = ast.literal_eval(f_table)
 except:
@@ -83,6 +87,7 @@ for j in range(width):
     pwd = reverse(hash(pwd))
     
 print(f"The password is: {pwd}")
+print(f"The hash of the generated password is: {hash(pwd)}")
 
 
 
