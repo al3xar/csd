@@ -16,19 +16,19 @@ def reverse(hash: str) -> str:
     # print(f"Reverse: {password}")
     return password
 
-def hash(data:str, num_bits=60):
+def hash(data:str, num_bits=40):
   full = hashlib.sha1(data.encode()).hexdigest()
   hexa_words = num_bits // 4
   return full[:hexa_words]
 
 def gen_table(width: int, deep: int) -> dict:
     table ={}
-    for i in range(deep):
-        passwd = str(random.randrange(9999999))
-        p = passwd
-        for j in range(width):
-            p = reverse(hash(p))
-        table[hash(p)] = passwd
+    while len(table) < deep:
+      passwd = str(random.randrange(9999999))
+      p = passwd
+      for j in range(width):
+          p = reverse(hash(p))
+      table[hash(p)] = passwd
     print("Table generated", len(table))
     return table
 
@@ -36,20 +36,11 @@ passwd = "67325"
 h = hash(passwd)
 print(f"Password: {passwd}")
 print(f"Hash of password {h}")
-# print("Reverse of hash:", reverse(hash("1234")))
-# print("Reverse of hash:", reverse(hash("12345")))
-# print("Reverse of hash:", reverse(hash("123456")))
-# print("Reverse of hash:", reverse(hash("1234567")))
-# print("Reverse of hash:", reverse(hash("12345678")))
-# print("Reverse of hash:", reverse(hash("123456789")))
-# print("Reverse of hash:", reverse(hash("1234567890")))
-# print("Reverse of hash:", reverse(hash("12345678901")))
-# print("Reverse of hash:", reverse(hash("123456789012")))
-# print("Reverse of hash:", reverse(hash("1234567890123")))
 
-width= 100
-deep = 100000
+width= 1000
+deep = 10000
 try :
+    raise Exception("Table not found")
     f_table = open('table.txt').read()
     table = ast.literal_eval(f_table)
 except:
@@ -59,30 +50,32 @@ except:
     f_table.write(str(table))
     f_table.close()
     
-hi = h
-for i in range(width):
-    if hi in table:
-        print(f"Found hash: {hi}")
-        print(f"Found password: {table[hi]}")
-        break
-    hi = hash(reverse(hi))
-    
-print(f"Password index: {i}")
-if i == width:
-    # throw exception
-    raise Exception("Password not found")
+collision = False
+hi= h
+for i in range (width):
+  if (hi in table):
+    print("Collision!")
+    collision = True
+    break;
+  hi = hash(reverse(hi))
+
+if not collision:
+  raise Exception("Collision no encontrada")
 
 pwd = table[hi]
+print(f"initial pwd:{pwd}")
+while hash(pwd) != h:
+  pwd = reverse(hash(pwd))
 
-print(f"Password line: {pwd}")
+print(hi)
+print(pwd)
 
-for j in range(width):
-    if h == hash(pwd):
-        print(f"The password is: {pwd}")
-        break
-    pwd = reverse(hash(pwd))
-    
-print(f"The password is: {pwd}")
+print(f"Password original: {passwd}")
+print(f"Hash del Password original: {hash(passwd)}")
+
+print(f"Password encontrado: {pwd}")
+print(f"Hash del Password encontrado: {hash(pwd)}")
+
 
 
 
