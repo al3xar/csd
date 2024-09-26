@@ -24,7 +24,7 @@ def hash(data:str, num_bits=60):
 def gen_table(width: int, deep: int) -> dict:
     table ={}
     while len(table) < deep:
-        passwd = str(random.randrange(999999999))
+        passwd = str(random.randrange(99999999999999999999))
         p = passwd
         for j in range(width):
             h = hash(p)
@@ -50,7 +50,7 @@ print(f"Hash of password {h}")
 # print("Reverse of hash:", reverse(hash("123456789012")))
 # print("Reverse of hash:", reverse(hash("1234567890123")))
 
-width= 1000
+width= 100
 deep = 10000
 try :
     raise Exception("Table not found")
