@@ -1,30 +1,96 @@
 CREATE TABLE equipo (
-	nomeq VARCHAR(25) NOT NULL, 
-	director VARCHAR(100) ,
-	telefono VARCHAR(16) ,
-	CONSTRAINT PK_equi PRIMARY KEY (nomeq));
+    nomeq VARCHAR(25) NOT NULL, 
+    director VARCHAR(100) NOT NULL, -- Nombre del director del equipo no puede ser nulo.
+    telefono VARCHAR(16) UNIQUE, -- Teléfono del director del equipo, único. Puede no existir, pero si existe no se puede repetir.
+    CONSTRAINT PK_equi PRIMARY KEY (nomeq));
 
 CREATE TABLE ciclista (
-	dorsal SMALLINT NOT NULL, 
-	nombre VARCHAR(30) , 
-	edad SMALLINT , 
-	nomeq VARCHAR (25) ,
-	salario REAL );
+    dorsal SMALLINT NOT NULL, 
+    nombre VARCHAR(30) NOT NULL , -- Nombre del ciclista no puede ser nulo.   
+    edad SMALLINT, 
+    nomeq VARCHAR(25),
+    salario REAL,
+    CONSTRAINT PK_ciclista PRIMARY KEY (dorsal), -- Clave primaria del ciclista es el dorsal, identificador único.
+    CONSTRAINT FK_ciclista_equipo FOREIGN KEY (nomeq) REFERENCES equipo(nomeq) -- Referencia a la tabla equipo al que pertenece el ciclista.
+    );
 
 CREATE TABLE etapa (
-	netapa SMALLINT NOT NULL, 
-	km SMALLINT ,
-	salida VARCHAR(35),
-	llegada VARCHAR(35),
-	dorsal SMALLINT);
+    netapa SMALLINT NOT NULL, 
+    km SMALLINT,
+    salida VARCHAR(35),
+    llegada VARCHAR(35),
+    dorsal SMALLINT,
+    CONSTRAINT PK_etapa PRIMARY KEY (netapa), -- Clave primaria de la etapa es el número de etapa, identificador único.
+    CONSTRAINT FK_etapa_ciclista FOREIGN KEY (dorsal) REFERENCES ciclista(dorsal) -- Referencia a la tabla ciclista que ha ganado la etapa.
+);
 
 CREATE TABLE puerto (
-	nompuerto VARCHAR(35) NOT NULL, 
-	altura SMALLINT , 
-	categoria CHAR , 
-	pendiente REAL , 
-	netapa SMALLINT, 
-	dorsal SMALLINT );
+    nompuerto VARCHAR(35) NOT NULL, 
+    altura SMALLINT,
+    categoria CHAR,
+    pendiente REAL,
+    netapa SMALLINT,
+    dorsal SMALLINT,
+    CONSTRAINT PK_puerto PRIMARY KEY (nompuerto), -- Clave primaria del puerto es el nombre del puerto, identificador único.
+    CONSTRAINT FK_puerto_etapa FOREIGN KEY (netapa) REFERENCES etapa(netapa), -- Referencia a la tabla etapa en la que se encuentra el puerto.
+    CONSTRAINT FK_puerto_ciclista FOREIGN KEY (dorsal) REFERENCES ciclista(dorsal) -- Referencia a la tabla ciclista que ha ganado el puerto.
+);
+
+
+-- Nueva tabla que almacena los resultados de los ciclistas en cada una de las etapas.
+CREATE TABLE resultados (
+    id_resultado INT AUTO_INCREMENT NOT NULL, 
+    dorsal SMALLINT NOT NULL, 
+    netapa SMALLINT NOT NULL, 
+    tiempo TIME NOT NULL,
+    CONSTRAINT PK_resultados PRIMARY KEY (id_resultado),
+    CONSTRAINT FK_resultados_ciclista FOREIGN KEY (dorsal) REFERENCES ciclista(dorsal),
+    CONSTRAINT FK_resultados_etapa FOREIGN KEY (netapa) REFERENCES etapa(netapa)
+);
+
+-- PERMISOS
+
+-- Crear roles
+CREATE ROLE director;
+CREATE ROLE operador;
+CREATE ROLE periodista;
+CREATE ROLE publico;
+
+-- Permisos para el director (total control)
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA ciclismo TO director;
+
+-- Permisos para el operador
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE etapa, puerto, resultados TO operador; -- El operador debe poder insertar los resultados también.
+GRANT SELECT ON TABLE equipo, ciclista TO operador;
+
+-- Permisos para el periodista
+GRANT SELECT ON ALL TABLES IN SCHEMA ciclismo TO periodista;
+
+-- Crear una vista para el público
+CREATE VIEW publico_ciclista AS
+SELECT dorsal, nombre, nomeq
+FROM ciclista;
+
+-- Otorgar permisos al rol público
+GRANT SELECT ON publico_ciclista TO ciclismo;
+GRANT SELECT ON TABLE equipo, etapa, puerto,resultados TO ciclismo; -- Publico tiene visibilidad sobre los resultados de las etapas también.
+
+
+-- Crear usuarios y asignar roles
+CREATE USER director_vuelta WITH PASSWORD 'director123';
+GRANT director TO director_vuelta;
+
+CREATE USER operador1 WITH PASSWORD 'operador123';
+GRANT operador TO operador1;
+
+CREATE USER periodista1 WITH PASSWORD 'periodista123';
+GRANT periodista TO periodista1;
+
+CREATE USER periodista2 WITH PASSWORD 'periodista321';
+GRANT periodista TO periodista2;
+
+CREATE USER app_publico WITH PASSWORD 'apppublico123';
+GRANT publico TO app_publico;
 
 
 INSERT INTO EQUIPO VALUES
@@ -38,7 +104,6 @@ INSERT INTO EQUIPO VALUES
 ('PDM','Piet Van Der Kruis', 888888888),
 ('Euskadi','Minguez', 999999999),
 ('TVM','Steveens Henk', 123456789);
-
 
 INSERT INTO CICLISTA VALUES
 (1,'Miguel Indurain',32,'Santander', 120000),
@@ -180,3 +245,44 @@ INSERT INTO PUERTO VALUES
 ('Puerto de Navalmoral',1521,'2',4.30,18,2),
 ('Puerto de Pedro Bernardo',1250,'1',4.20,18,25),
 ('Sierra Nevada',2500,'E',6.00,2,26) ;
+
+INSERT INTO RESULTADOS VALUES
+(1,1,1,'02:30:00'),
+(2,2,1,'02:40:00'),
+(3,3,1,'04:30:00'),
+(4,4,1,'04:30:00'),
+(5,5,1,'04:30:00'),
+(6,6,1,'04:30:00'),
+(7,7,1,'04:30:00'),
+(8,8,1,'04:30:00'),
+(9,9,1,'04:30:00'),
+(10,10,1,'04:30:00'),
+(11,11,1,'04:30:00'),
+(12,12,1,'04:30:00'),
+(13,13,1,'04:30:00'),
+(14,14,1,'04:30:00'),
+(15,15,1,'04:30:00'),
+(16,16,1,'04:30:00'),
+(17,17,1,'04:30:00'),
+(18,18,1,'04:30:00'),
+(19,19,1,'04:30:00'),
+(20,20,1,'04:30:00'),
+(21,21,1,'04:30:00'),
+(22,22,1,'04:30:00'),
+(23,23,1,'04:30:00'),
+(24,24,1,'04:30:00'),
+(25,25,1,'04:30:00'),
+(26,26,1,'04:30:00'),
+(27,27,1,'04:30:00'),
+(28,28,1,'04:30:00'),
+(29,29,1,'04:30:00'),
+(30,30,1,'04:30:00'),
+(31,31,1,'04:30:00'),
+(32,32,1,'04:30:00'),
+(33,33,1,'04:30:00'),
+(34,34,1,'04:30:00'),
+(35,35,1,'04:30:00'),
+(36,36,1,'04:30:00'),
+(37,37,1,'04:30:00'),
+(38,38,1,'04:30:00');
+
