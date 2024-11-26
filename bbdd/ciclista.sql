@@ -1,30 +1,32 @@
-CREATE TABLE equipo (
+-- Creación de tablas
+CREATE TABLE IF NOT EXISTS equipo (
     nomeq VARCHAR(25) NOT NULL, 
     director VARCHAR(100) NOT NULL, -- Nombre del director del equipo no puede ser nulo.
     telefono VARCHAR(16) UNIQUE, -- Teléfono del director del equipo, único. Puede no existir, pero si existe no se puede repetir.
-    CONSTRAINT PK_equi PRIMARY KEY (nomeq));
+    CONSTRAINT PK_equipo PRIMARY KEY (nomeq)
+);
 
-CREATE TABLE ciclista (
+CREATE TABLE IF NOT EXISTS ciclista (
     dorsal SMALLINT NOT NULL, 
-    nombre VARCHAR(30) NOT NULL , -- Nombre del ciclista no puede ser nulo.   
+    nombre VARCHAR(30) NOT NULL, -- Nombre del ciclista no puede ser nulo.
     edad SMALLINT, 
     nomeq VARCHAR(25),
     salario REAL,
     CONSTRAINT PK_ciclista PRIMARY KEY (dorsal), -- Clave primaria del ciclista es el dorsal, identificador único.
-    CONSTRAINT FK_ciclista_equipo FOREIGN KEY (nomeq) REFERENCES equipo(nomeq) -- Referencia a la tabla equipo al que pertenece el ciclista.
-    );
+    CONSTRAINT FK_ciclista_equipo FOREIGN KEY (nomeq) REFERENCES equipo(nomeq) ON DELETE SET NULL -- Si se borra el ciclista se pone a NULL
+);
 
-CREATE TABLE etapa (
+CREATE TABLE IF NOT EXISTS etapa (
     netapa SMALLINT NOT NULL, 
     km SMALLINT,
     salida VARCHAR(35),
     llegada VARCHAR(35),
     dorsal SMALLINT,
     CONSTRAINT PK_etapa PRIMARY KEY (netapa), -- Clave primaria de la etapa es el número de etapa, identificador único.
-    CONSTRAINT FK_etapa_ciclista FOREIGN KEY (dorsal) REFERENCES ciclista(dorsal) -- Referencia a la tabla ciclista que ha ganado la etapa.
+    CONSTRAINT FK_etapa_ciclista FOREIGN KEY (dorsal) REFERENCES ciclista(dorsal) ON DELETE SET NULL -- Si se borra el ciclista se pone a NULL
 );
 
-CREATE TABLE puerto (
+CREATE TABLE IF NOT EXISTS puerto (
     nompuerto VARCHAR(35) NOT NULL, 
     altura SMALLINT,
     categoria CHAR,
@@ -32,68 +34,79 @@ CREATE TABLE puerto (
     netapa SMALLINT,
     dorsal SMALLINT,
     CONSTRAINT PK_puerto PRIMARY KEY (nompuerto), -- Clave primaria del puerto es el nombre del puerto, identificador único.
-    CONSTRAINT FK_puerto_etapa FOREIGN KEY (netapa) REFERENCES etapa(netapa), -- Referencia a la tabla etapa en la que se encuentra el puerto.
-    CONSTRAINT FK_puerto_ciclista FOREIGN KEY (dorsal) REFERENCES ciclista(dorsal) -- Referencia a la tabla ciclista que ha ganado el puerto.
+    CONSTRAINT FK_puerto_etapa FOREIGN KEY (netapa) REFERENCES etapa(netapa) ON DELETE CASCADE, -- Si se borra la etapa se borra el puerto.
+    CONSTRAINT FK_puerto_ciclista FOREIGN KEY (dorsal) REFERENCES ciclista(dorsal) ON DELETE SET NULL -- Si se borra el ciclista se pone a NULL
 );
 
-
--- Nueva tabla que almacena los resultados de los ciclistas en cada una de las etapas.
-CREATE TABLE resultados (
+-- Tabla de resultados
+CREATE TABLE IF NOT EXISTS resultados (
     id_resultado INT AUTO_INCREMENT NOT NULL, 
     dorsal SMALLINT NOT NULL, 
     netapa SMALLINT NOT NULL, 
     tiempo TIME NOT NULL,
     CONSTRAINT PK_resultados PRIMARY KEY (id_resultado),
-    CONSTRAINT FK_resultados_ciclista FOREIGN KEY (dorsal) REFERENCES ciclista(dorsal),
-    CONSTRAINT FK_resultados_etapa FOREIGN KEY (netapa) REFERENCES etapa(netapa),
+    CONSTRAINT FK_resultados_ciclista FOREIGN KEY (dorsal) REFERENCES ciclista(dorsal) ON DELETE CASCADE, -- Si se borra el ciclista se borra el resultado.
+    CONSTRAINT FK_resultados_etapa FOREIGN KEY (netapa) REFERENCES etapa(netapa) ON DELETE CASCADE, -- Si se borra la etapa se borra el resultado.
     CONSTRAINT UC_dorsal_netapa UNIQUE (dorsal, netapa) -- No puede haber dos resultados para el mismo ciclista en la misma etapa.
 );
 
--- PERMISOS
+-- Creación de roles
+CREATE ROLE IF NOT EXISTS director;
+CREATE ROLE IF NOT EXISTS operador;
+CREATE ROLE IF NOT EXISTS periodista;
+CREATE ROLE IF NOT EXISTS publico;
 
--- Crear roles
-CREATE ROLE director;
-CREATE ROLE operador;
-CREATE ROLE periodista;
-CREATE ROLE publico;
-
--- Permisos para el director (total control)
-GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA ciclismo TO director;
+-- Permisos para el director (control total)
+GRANT ALL PRIVILEGES ON ciclismo.* TO director;
 
 -- Permisos para el operador
-GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE etapa, puerto, resultados TO operador; -- El operador debe poder insertar los resultados también.
-GRANT SELECT ON TABLE equipo, ciclista TO operador;
+GRANT SELECT, INSERT, UPDATE, DELETE ON ciclismo.etapa TO operador;
+GRANT SELECT, INSERT, UPDATE, DELETE ON ciclismo.puerto TO operador;
+GRANT SELECT, INSERT, UPDATE, DELETE ON ciclismo.resultados TO operador;
+GRANT SELECT ON ciclismo.equipo TO operador;
+GRANT SELECT ON ciclismo.ciclista TO operador;
 
 -- Permisos para el periodista
-GRANT SELECT ON ALL TABLES IN SCHEMA ciclismo TO periodista;
+GRANT SELECT ON ciclismo.* TO periodista;
 
--- Crear una vista para el público
-CREATE VIEW publico_ciclista AS
+-- Vista para el público
+CREATE OR REPLACE VIEW publico_ciclista AS
 SELECT dorsal, nombre, nomeq
-FROM ciclista;
+FROM ciclismo.ciclista;
 
--- Otorgar permisos al rol público
+-- Permisos para el público
 GRANT SELECT ON publico_ciclista TO publico;
-GRANT SELECT ON TABLE equipo, etapa, puerto,resultados TO publico; -- Publico tiene visibilidad sobre los resultados de las etapas también.
+GRANT SELECT ON ciclismo.equipo TO publico;
+GRANT SELECT ON ciclismo.etapa TO publico;
+GRANT SELECT ON ciclismo.puerto TO publico;
+GRANT SELECT ON ciclismo.resultados TO publico;
 
-
--- Crear usuarios y asignar roles
-CREATE USER director_vuelta WITH PASSWORD 'director123';
+-- Creación de usuarios y asignación de roles
+CREATE USER IF NOT EXISTS director_vuelta IDENTIFIED BY 'director123';
 GRANT director TO director_vuelta;
 
-CREATE USER operador1 WITH PASSWORD 'operador123';
+CREATE USER IF NOT EXISTS operador1 IDENTIFIED BY 'operador123';
 GRANT operador TO operador1;
 
-CREATE USER periodista1 WITH PASSWORD 'periodista123';
+CREATE USER IF NOT EXISTS periodista1 IDENTIFIED BY 'periodista123';
 GRANT periodista TO periodista1;
 
-CREATE USER periodista2 WITH PASSWORD 'periodista321';
+CREATE USER IF NOT EXISTS periodista2 IDENTIFIED BY 'periodista321';
 GRANT periodista TO periodista2;
 
-CREATE USER app_publico WITH PASSWORD 'apppublico123';
+CREATE USER IF NOT EXISTS app_publico IDENTIFIED BY 'apppublico123';
 GRANT publico TO app_publico;
 
+-- Fijando roles por defecto
+SET DEFAULT ROLE director TO director_vuelta;
+SET DEFAULT ROLE operador TO operador1;
+SET DEFAULT ROLE periodista TO periodista1;
+SET DEFAULT ROLE periodista TO periodista2;
+SET DEFAULT ROLE publico TO app_publico;
 
+FLUSH PRIVILEGES;
+
+-- Insertar valores en las tablas
 INSERT INTO EQUIPO VALUES
 ('Astana','Jose Perez', 111111111),
 ('Santander','Miguel Echevarria', 222222222),
@@ -247,6 +260,7 @@ INSERT INTO PUERTO VALUES
 ('Puerto de Pedro Bernardo',1250,'1',4.20,18,25),
 ('Sierra Nevada',2500,'E',6.00,2,26) ;
 
+-- Insertar valores de la tabla propuesta
 INSERT INTO RESULTADOS VALUES
 (1,1,1,'02:30:00'),
 (2,2,1,'02:40:00'),
@@ -286,4 +300,3 @@ INSERT INTO RESULTADOS VALUES
 (36,36,1,'04:30:00'),
 (37,37,1,'04:30:00'),
 (38,38,1,'04:30:00');
-
