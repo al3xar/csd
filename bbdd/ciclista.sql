@@ -27,20 +27,6 @@ CREATE TABLE puerto (
 	dorsal SMALLINT );
 
 
-
-CREATE TABLE resultados (
-    id_resultado INT AUTO_INCREMENT NOT NULL, 
-    dorsal SMALLINT NOT NULL, 
-    netapa SMALLINT NOT NULL, 
-    tiempo TIME NOT NULL,
-    CONSTRAINT PK_resultados PRIMARY KEY (id_resultado),
-    CONSTRAINT FK_resultados_ciclista FOREIGN KEY (dorsal) REFERENCES ciclista(dorsal),
-    CONSTRAINT FK_resultados_etapa FOREIGN KEY (netapa) REFERENCES etapa(netapa)
-);
-
-
-
-
 INSERT INTO EQUIPO VALUES
 ('Astana','Jose Perez', 111111111),
 ('Santander','Miguel Echevarria', 222222222),
