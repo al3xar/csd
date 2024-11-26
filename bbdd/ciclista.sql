@@ -45,7 +45,8 @@ CREATE TABLE resultados (
     tiempo TIME NOT NULL,
     CONSTRAINT PK_resultados PRIMARY KEY (id_resultado),
     CONSTRAINT FK_resultados_ciclista FOREIGN KEY (dorsal) REFERENCES ciclista(dorsal),
-    CONSTRAINT FK_resultados_etapa FOREIGN KEY (netapa) REFERENCES etapa(netapa)
+    CONSTRAINT FK_resultados_etapa FOREIGN KEY (netapa) REFERENCES etapa(netapa),
+    CONSTRAINT UC_dorsal_netapa UNIQUE (dorsal, netapa) -- No puede haber dos resultados para el mismo ciclista en la misma etapa.
 );
 
 -- PERMISOS
