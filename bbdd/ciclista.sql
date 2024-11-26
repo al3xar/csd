@@ -72,8 +72,8 @@ SELECT dorsal, nombre, nomeq
 FROM ciclista;
 
 -- Otorgar permisos al rol público
-GRANT SELECT ON publico_ciclista TO ciclismo;
-GRANT SELECT ON TABLE equipo, etapa, puerto,resultados TO ciclismo; -- Publico tiene visibilidad sobre los resultados de las etapas también.
+GRANT SELECT ON publico_ciclista TO publico;
+GRANT SELECT ON TABLE equipo, etapa, puerto,resultados TO publico; -- Publico tiene visibilidad sobre los resultados de las etapas también.
 
 
 -- Crear usuarios y asignar roles
