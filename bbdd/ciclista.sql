@@ -1,3 +1,7 @@
+-- Limpiamos el schema para
+DROP SCHEMA IF EXISTS ciclismo;
+CREATE SCHEMA IF NOT EXISTS ciclismo;
+USE ciclismo;
 -- Creación de tablas
 CREATE TABLE IF NOT EXISTS equipo (
     nomeq VARCHAR(25) NOT NULL, 
@@ -29,12 +33,12 @@ CREATE TABLE IF NOT EXISTS etapa (
 CREATE TABLE IF NOT EXISTS puerto (
     nompuerto VARCHAR(35) NOT NULL, 
     altura SMALLINT,
-    categoria CHAR,
+    categoria CHAR(1),
     pendiente REAL,
     netapa SMALLINT,
     dorsal SMALLINT,
     CONSTRAINT PK_puerto PRIMARY KEY (nompuerto), -- Clave primaria del puerto es el nombre del puerto, identificador único.
-    CONSTRAINT FK_puerto_etapa FOREIGN KEY (netapa) REFERENCES etapa(netapa) ON DELETE CASCADE, -- Si se borra la etapa se borra el puerto.
+    CONSTRAINT FK_puerto_etapa FOREIGN KEY (netapa) REFERENCES etapa(netapa) ON DELETE CASCADE,
     CONSTRAINT FK_puerto_ciclista FOREIGN KEY (dorsal) REFERENCES ciclista(dorsal) ON DELETE SET NULL -- Si se borra el ciclista se pone a NULL
 );
 
@@ -81,6 +85,8 @@ GRANT SELECT ON ciclismo.etapa TO publico;
 GRANT SELECT ON ciclismo.puerto TO publico;
 GRANT SELECT ON ciclismo.resultados TO publico;
 
+flush privileges;
+
 -- Creación de usuarios y asignación de roles
 CREATE USER IF NOT EXISTS director_vuelta IDENTIFIED BY 'director123';
 GRANT director TO director_vuelta;
@@ -97,7 +103,6 @@ GRANT periodista TO periodista2;
 CREATE USER IF NOT EXISTS app_publico IDENTIFIED BY 'apppublico123';
 GRANT publico TO app_publico;
 
--- Fijando roles por defecto
 SET DEFAULT ROLE director TO director_vuelta;
 SET DEFAULT ROLE operador TO operador1;
 SET DEFAULT ROLE periodista TO periodista1;
@@ -106,7 +111,6 @@ SET DEFAULT ROLE publico TO app_publico;
 
 FLUSH PRIVILEGES;
 
--- Insertar valores en las tablas
 INSERT INTO EQUIPO VALUES
 ('Astana','Jose Perez', 111111111),
 ('Santander','Miguel Echevarria', 222222222),
@@ -260,7 +264,6 @@ INSERT INTO PUERTO VALUES
 ('Puerto de Pedro Bernardo',1250,'1',4.20,18,25),
 ('Sierra Nevada',2500,'E',6.00,2,26) ;
 
--- Insertar valores de la tabla propuesta
 INSERT INTO RESULTADOS VALUES
 (1,1,1,'02:30:00'),
 (2,2,1,'02:40:00'),
