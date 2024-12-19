@@ -2,15 +2,15 @@ import hashlib
 import random
 import ast
 
-width= 100
-deep = 100000
-size = 10000000
+width= 10000
+deep = 100
+size = 1000000
 
 
 def reverse(hash: str) -> str:
     return f"{int(hash, 16) % size}"
 
-def hash(data:str, num_bits=50):
+def hash(data:str, num_bits=60):
   full = hashlib.sha1(data.encode()).hexdigest()
   hexa_words = num_bits // 4
   return full[:hexa_words]
@@ -23,6 +23,7 @@ def gen_table(width: int, deep: int) -> dict:
         for _ in range(width):
             h = hash(p)
             p = reverse(h)
+            if
         if h not in table:
             table[h] = passwd
         else:
@@ -35,8 +36,6 @@ def search_collision(table,width):
     found = False
     for i in range(width):
         if hi in table:
-            # print(f"Colision encontrada en index {i}, buscando hash en linea...")
-            # trace_collision(table, hi)
             found, hp, pwd = find_original_hash(table,hi)
             if found:
                 break;
@@ -51,12 +50,9 @@ def find_original_hash(table, hi):
     hp = hash(pwd)
     while h != hp:
         if hp == hi:
-            # print(f"Falso positivo, seguimos buscando...")
             return False
         hp = hash(pwd)
         pwd = reverse(hp)
-    # print(f"HASH ENCONTRADO: {hp}")
-    # print(f"CONSTRASEÑA EQUIVALENTE: {pwd}")
     return True, hp, pwd
 
 def trace_collision(table, hi):
